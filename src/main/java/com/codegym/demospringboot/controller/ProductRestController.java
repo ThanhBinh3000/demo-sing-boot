@@ -1,6 +1,7 @@
 package com.codegym.demospringboot.controller;
 
 
+import com.codegym.demospringboot.model.Category;
 import com.codegym.demospringboot.model.Product;
 import com.codegym.demospringboot.model.ProductForm;
 import com.codegym.demospringboot.service.product.IProductService;
@@ -30,30 +31,39 @@ public class ProductRestController {
     @Autowired
     private IProductService productService;
 
-    @GetMapping
-    public ResponseEntity<Page<Product>> fillAllProduct(@RequestParam(name = "q") Optional<String> q, @PageableDefault(size = 8) Pageable pageable) {
-        Page<Product> productPage = null;
-        if (q.isPresent()) {
-            productPage = productService.findProductByNameContaining(q.get(), pageable);
-        } else {
-            productPage = productService.findAll(pageable);
-        }
-        if (productPage.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(productPage, HttpStatus.OK);
+    //    @GetMapping
+//    public ResponseEntity<Page<Product>> fillAllProduct(@RequestParam(name = "q") Optional<String> q, @PageableDefault(size = 8) Pageable pageable) {
+//        Page<Product> productPage = null;
+//        if (q.isPresent()) {
+//            productPage = productService.findProductByNameContaining(q.get(), pageable);
+//        } else {
+//            productPage = productService.findAll(pageable);
+//        }
+//        if (productPage.isEmpty()) {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//        return new ResponseEntity<>(productPage, HttpStatus.OK);
+//    }
+    @GetMapping // hiển thị danh mục sản phẩm Product
+    public ResponseEntity<Iterable<Product>> findAll() {
+        Iterable<Product> products = productService.findAll();
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")// tìm kiêm product theo id
-    public ResponseEntity<Product> findById(@PathVariable Long id){
+    public ResponseEntity<Product> findById(@PathVariable Long id) {
         Optional<Product> productOptional = productService.findById(id);
-        if (!productOptional.isPresent()){
+        if (!productOptional.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         }
-        return new ResponseEntity<>(productOptional.get(),HttpStatus.OK);
+        return new ResponseEntity<>(productOptional.get(), HttpStatus.OK);
     }
 
+    //    @PostMapping //thêm sản phẩm mới Product
+//    public ResponseEntity<Product> seve(@RequestBody Product product){
+//        return new ResponseEntity<>(productService.save(product),HttpStatus.CREATED);
+//    }
     @PostMapping
     public ResponseEntity<Product> saveProduct(@ModelAttribute ProductForm productForm) {
         String fileName = productForm.getImage().getOriginalFilename();
@@ -68,9 +78,18 @@ public class ProductRestController {
         product.setCategory(productForm.getCategory());
         return new ResponseEntity<>(productService.save(product), HttpStatus.CREATED);
     }
+//@PutMapping("/{id}") // sửa sản phẩm product
+//public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product){
+//    Optional<Product> productOptional = productService.findById(id);
+//    if (!productOptional.isPresent()){
+//        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//    }
+//    product.setId(id);
+//    return new ResponseEntity<>(productService.save(product),HttpStatus.OK);
+//}
 
-    @PostMapping("/{id}")
-    private ResponseEntity<Product> editProduct(@PathVariable Long id, ProductForm productForm) {
+    @PostMapping("/{id}")//sửa
+    private ResponseEntity<Product> editProduct(@PathVariable Long id, @ModelAttribute ProductForm productForm) {
         Optional<Product> productOptional = productService.findById(id);
 
         if (!productOptional.isPresent()) {
@@ -78,7 +97,7 @@ public class ProductRestController {
         }
         Product product = productOptional.get();
         MultipartFile multipartFile = productForm.getImage();
-        if (multipartFile.getSize() != 0) {
+        if (multipartFile !=null && multipartFile.getSize() != 0) {
             File file = new File(uploadPath + product.getImage());
             if (file.exists()) {
                 file.delete();
@@ -102,10 +121,10 @@ public class ProductRestController {
     }
 
     @DeleteMapping("/{id}") // xóa sản phẩm product
-    public ResponseEntity<Product> deleteProduct(@PathVariable Long id){
+    public ResponseEntity<Product> deleteProduct(@PathVariable Long id) {
         Optional<Product> productOptional = productService.findById(id);
-        if (!productOptional.isPresent()){
-            return  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (!productOptional.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         productService.removeById(id);
         return new ResponseEntity<>(productOptional.get(), HttpStatus.OK);

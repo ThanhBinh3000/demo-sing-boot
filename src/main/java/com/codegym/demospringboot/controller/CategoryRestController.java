@@ -25,11 +25,8 @@ public class CategoryRestController {
     IProductService productService;
 
     @GetMapping // hiển thị danh mục sản phẩm category
-    public ResponseEntity<Iterable<Category>> findAll(@RequestParam(name = "q") Optional<String> q, @RequestParam(name = "page",required = false, defaultValue = "0") Integer page){
+    public ResponseEntity<Iterable<Category>> findAll(){
         Iterable<Category> categories = categoryService.findAll();
-        if (q.isPresent()){
-            categories = categoryService.findAllByNameContaining(q.get());
-        }
         return new ResponseEntity<>(categories, HttpStatus.OK);
     }
     @GetMapping("/{id}")//tìm kiếm danh mục category theo id
@@ -54,7 +51,7 @@ public class CategoryRestController {
     }
 
     @PutMapping("/{id}") // sửa sản phẩm category
-    public ResponseEntity<Category> updateProduct(@PathVariable Long id, @RequestBody Category newCategory){
+    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category newCategory){
         Optional<Category> categoryOptional = categoryService.findById(id);
         if (!categoryOptional.isPresent()){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -64,7 +61,7 @@ public class CategoryRestController {
     }
 
     @DeleteMapping("/{id}") // xóa sản phẩm category
-    public ResponseEntity<Category> deleteProduct(@PathVariable Long id){
+    public ResponseEntity<Category> deleteCategory(@PathVariable Long id){
         Optional<Category> categoryOptional = categoryService.findById(id);
         if (!categoryOptional.isPresent()){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
